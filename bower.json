@@ -1,0 +1,10 @@
+{
+  "name": "package",
+  "version": "0.0.0",
+  "dependencies": {
+    "animate.css": "~3.2.0",
+    "zepto": "~1.1.6",
+    "swiper": "~3.0.5",
+    "webcola":"~3.0.0"
+  }
+}
