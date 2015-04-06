@@ -5,68 +5,68 @@ var width = 960,
   h = 800,
   root;
 
-var red = "rgb(254, 137, 137)";
-
-var d3cola = cola.d3adaptor()
-  .linkDistance(60)
-  .size([width, height]);
-
-var outer = d3.select("body").append("svg")
-  .attr("width", width)
-  .attr("height", height)
-  .attr("pointer-events", "all");
-
-var zoom = d3.behavior.zoom();
-outer.append('rect')
-  .attr('class', 'background')
-  .attr('width', "100%")
-  .attr('height', "100%")
-  .call(zoom.on("zoom", redraw));
-  //.on("dblclick.zoom", zoomToFit);
-
-var defs = outer.append("svg:defs");
-
-function addGradient(id, colour1, opacity1, colour2, opacity2) {
-  var gradient = defs.append("svg:linearGradient")
-    .attr("id", id)
-    .attr("x1", "0%")
-    .attr("y1", "0%")
-    .attr("x2", "100%")
-    .attr("y2", "0%")
-    .attr("spreadMethod", "pad");
-
-  gradient.append("svg:stop")
-    .attr("offset", "0%")
-    .attr("stop-color", colour1)
-    .attr("stop-opacity", opacity1);
-
-  gradient.append("svg:stop")
-    .attr("offset", "100%")
-    .attr("stop-color", colour2)
-    .attr("stop-opacity", opacity2);
-}
-
-addGradient("SpikeGradient", "red", 1, "red", 0);
-addGradient("EdgeGradient", red, 1, "darkgray", 1);
-addGradient("ReverseEdgeGradient", "darkgray", 1, red, 1);
-
-var vis = outer.append('g');
-var edgesLayer = vis.append("g");
-var nodesLayer = vis.append("g");
-
-var nodeMouseDown = false;
-
-function redraw(transition) {
-  // if mouse down then we are dragging not panning
-  if (nodeMouseDown) return;
-  (transition ? vis.transition() : vis)
-    .attr("transform", "translate(" + zoom.translate() + ") scale(" + zoom.scale() + ")");
-}
-
-//var modelgraph = new tmdb.Graph();
-var viewgraph = { nodes: [], links: [] };
-
-var nodeWidth = 30, nodeHeight = 35;
+//var red = "rgb(254, 137, 137)";
+//
+//var d3cola = cola.d3adaptor()
+//  .linkDistance(60)
+//  .size([width, height]);
+//
+//var outer = d3.select("body").append("svg")
+//  .attr("width", width)
+//  .attr("height", height)
+//  .attr("pointer-events", "all");
+//
+//var zoom = d3.behavior.zoom();
+//outer.append('rect')
+//  .attr('class', 'background')
+//  .attr('width', "100%")
+//  .attr('height', "100%")
+//  .call(zoom.on("zoom", redraw));
+//  //.on("dblclick.zoom", zoomToFit);
+//
+//var defs = outer.append("svg:defs");
+//
+//function addGradient(id, colour1, opacity1, colour2, opacity2) {
+//  var gradient = defs.append("svg:linearGradient")
+//    .attr("id", id)
+//    .attr("x1", "0%")
+//    .attr("y1", "0%")
+//    .attr("x2", "100%")
+//    .attr("y2", "0%")
+//    .attr("spreadMethod", "pad");
+//
+//  gradient.append("svg:stop")
+//    .attr("offset", "0%")
+//    .attr("stop-color", colour1)
+//    .attr("stop-opacity", opacity1);
+//
+//  gradient.append("svg:stop")
+//    .attr("offset", "100%")
+//    .attr("stop-color", colour2)
+//    .attr("stop-opacity", opacity2);
+//}
+//
+//addGradient("SpikeGradient", "red", 1, "red", 0);
+//addGradient("EdgeGradient", red, 1, "darkgray", 1);
+//addGradient("ReverseEdgeGradient", "darkgray", 1, red, 1);
+//
+//var vis = outer.append('g');
+//var edgesLayer = vis.append("g");
+//var nodesLayer = vis.append("g");
+//
+//var nodeMouseDown = false;
+//
+//function redraw(transition) {
+//  // if mouse down then we are dragging not panning
+//  if (nodeMouseDown) return;
+//  (transition ? vis.transition() : vis)
+//    .attr("transform", "translate(" + zoom.translate() + ") scale(" + zoom.scale() + ")");
+//}
+//
+////var modelgraph = new tmdb.Graph();
+//var viewgraph = { nodes: [], links: [] };
+//
+//var nodeWidth = 30, nodeHeight = 35;
 
 // get first node
 //var d = modelgraph.getNode(tmdb.Movie, 550, addViewNode);
@@ -74,20 +74,78 @@ var nodeWidth = 30, nodeHeight = 35;
 //  addViewNode(startNode);
 //  refocus(startNode);
 //});
-d3.json("data/data.json", function(json) {
-  root = json;
-  console.log(' root ', root);
-  root.x = w / 2;
-  root.y = h / 2 - 80;
-  var svg = d3.select("#viz")
-    .append("svg")
-    .attr("width", width)
-    .attr("height", height);
+//d3.json("data/data.json", function(json) {
+//  root = json;
+//  root.x = w / 2;
+//  root.y = h / 2 - 80;
+//  var svg = d3.select("#viz")
+//    .append("svg")
+//    .attr("width", width)
+//    .attr("height", height);
+//
+//    viewgraph.link = svg.selectAll(".link"),
+//    viewgraph.nodes = svg.selectAll(".node");
+//
+//});
 
-    viewgraph.link = svg.selectAll(".link"),
-    viewgraph.nodes = svg.selectAll(".node");
+var color = d3.scale.category20();
 
-});
+var cola = cola.d3adaptor()
+  .size([width, height]);
+
+var svg = d3.select("body").append("svg")
+  .attr("width", width)
+  .attr("height", height);
+
+d3.json("data/chris.json", function (error, graph) {
+  cola
+    .nodes(graph.nodes)
+    .links(graph.links)
+    .symmetricDiffLinkLengths(5)
+    .start(30);
+
+  var link = svg.selectAll(".link")
+    .data(graph.links)
+    .enter().append("line")
+    .attr("class", "link")
+    .style("stroke-width", function (d) { return Math.sqrt(d.value); });
+
+  var node = svg.selectAll(".node")
+    .data(graph.nodes)
+    .enter().append("circle")
+    .attr("class", "node")
+    .attr("r", 5)
+    .style("fill", function (d) { return color(d.group); })
+    .on("click", function (d) {
+      d.fixed = true;
+    })
+    .call(cola.drag);
+
+  node.append("title")
+    .text(function (d) { return d.name; });
+
+  cola.on("tick", function () {
+    link.attr("x1", function (d) {
+      return d.source.x;
+    })
+      .attr("y1", function (d) {
+        return d.source.y;
+      })
+      .attr("x2", function (d) {
+        return d.target.x;
+      })
+      .attr("y2", function (d) {
+        return d.target.y;
+      });
+
+    node.attr("cx", function (d) {
+      return d.x;
+    })
+      .attr("cy", function (d) {
+        return d.y;
+      });
+  });
+  });
 //function refocus(focus) {
 //  var neighboursExpanded = modelgraph.expandNeighbours(focus, function (v) {
 //    if (!inView(v)) addViewNode(v, focus);
@@ -97,19 +155,7 @@ d3.json("data/data.json", function(json) {
 //    refreshViewGraph();
 //  });
 //}
-function flatten(root) {
-  var nodes = [], i = 0;
 
-  function recurse(node) {
-    if (node.children) node.size = node.children.reduce(function(p, v) { return p + recurse(v); }, 0);
-    if (!node.id) node.id = ++i;
-    nodes.push(node);
-    return node.size;
-  }
-
-  root.size = recurse(root);
-  return nodes;
-}
 //
 //function refreshViewGraph() {
 // // viewgraph.links = [];
@@ -195,74 +241,74 @@ function flatten(root) {
 //  refocus(focus);
 //}
 //
-function update() {
-  var nodes = flatten(viewgraph.nodes);
-  var links = d3.layout.tree().links(nodes);
-
-  d3cola.nodes(nodes)
-    .links(links)
-    .start();
-
-  var link = edgesLayer.selectAll(".link")
-    .data(viewgraph.links);
-
-  link.enter().append("rect")
-    .attr("x", 0).attr("y", 0)
-    .attr("height", 2)
-    .attr("class", "link");
-
-  link.exit().remove();
-
-  link
-    .attr("fill", function (d) {
-      if (d.source.colour === red && d.target.colour === red) return red;
-      if (d.source.colour !== red && d.target.colour !== red) return "darkgray";
-      return d.source.colour === red ? "url(#ReverseEdgeGradient)" : "url(#EdgeGradient)";
-    });
-
-  var node = nodesLayer.selectAll(".node")
-    .data(viewgraph.nodes, function (d) { //
-    // return d.viewgraphid;
-      return d.id || (d.id = ++i);
-    })
-
-  var nodeEnter = node.enter().append("g")
-    .attr("id", function (d) { return d.name; })
-    .attr("class", "node" )
-    .on("mousedown", function () { nodeMouseDown = true; }) // recording the mousedown state allows us to differentiate dragging from panning
-    .on("mouseup", function () { nodeMouseDown = false; })
-    .on("touchmove", function () { d3.event.preventDefault() })
-    .on("mouseenter", function (d) { hintNeighbours(d) }) // on mouse over nodes we show "spikes" indicating there are hidden neighbours
-    .on("mouseleave", function (d) { unhintNeighbours(d) })
-    .call(d3cola.drag);
-
-  nodeEnter.append("g").attr("id", function (d) { return d.name() + "_spikes" })
-    .attr("transform", "translate(3,3)");
-
-  nodeEnter.append("rect")
-    .attr("rx", 5).attr("ry", 5)
-    .style("stroke-width","0")
-    .attr("width", nodeWidth).attr("height", nodeHeight)
-    .on("click", function (d) { click(d) })
-    .on("touchend", function (d) { click(d) });
-  nodeEnter.append("title")
-    .text(function (d) { return d.label; });
-
-  node.style("fill", function (d) { return d.colour; });
-
-  d3cola.on("tick", function () {
-    link.attr("transform", function (d) {
-      var dx = d.source.x - d.target.x, dy = d.source.y - d.target.y;
-      var r = 180 * Math.atan2(dy, dx) / Math.PI;
-      return "translate(" + d.target.x + "," + d.target.y + ") rotate(" + r + ") ";
-    }).attr("width", function (d) {
-      var dx = d.source.x - d.target.x, dy = d.source.y - d.target.y;
-      return Math.sqrt(dx * dx + dy * dy);
-    });
-
-    node.attr("transform", function (d) { return "translate(" + (d.x - nodeWidth/2) + "," + (d.y-nodeHeight/2) + ")"; });
-  });
-}
+//function update() {
+//  var nodes = flatten(viewgraph.nodes);
+//  var links = d3.layout.tree().links(nodes);
+//
+//  d3cola.nodes(nodes)
+//    .links(links)
+//    .start();
+//
+//  var link = edgesLayer.selectAll(".link")
+//    .data(viewgraph.links);
+//
+//  link.enter().append("rect")
+//    .attr("x", 0).attr("y", 0)
+//    .attr("height", 2)
+//    .attr("class", "link");
+//
+//  link.exit().remove();
+//
+//  link
+//    .attr("fill", function (d) {
+//      if (d.source.colour === red && d.target.colour === red) return red;
+//      if (d.source.colour !== red && d.target.colour !== red) return "darkgray";
+//      return d.source.colour === red ? "url(#ReverseEdgeGradient)" : "url(#EdgeGradient)";
+//    });
+//
+//  var node = nodesLayer.selectAll(".node")
+//    .data(viewgraph.nodes, function (d) { //
+//    // return d.viewgraphid;
+//      return d.id || (d.id = ++i);
+//    })
+//
+//  var nodeEnter = node.enter().append("g")
+//    .attr("id", function (d) { return d.name; })
+//    .attr("class", "node" )
+//    .on("mousedown", function () { nodeMouseDown = true; }) // recording the mousedown state allows us to differentiate dragging from panning
+//    .on("mouseup", function () { nodeMouseDown = false; })
+//    .on("touchmove", function () { d3.event.preventDefault() })
+//    .on("mouseenter", function (d) { hintNeighbours(d) }) // on mouse over nodes we show "spikes" indicating there are hidden neighbours
+//    .on("mouseleave", function (d) { unhintNeighbours(d) })
+//    .call(d3cola.drag);
+//
+//  nodeEnter.append("g").attr("id", function (d) { return d.name() + "_spikes" })
+//    .attr("transform", "translate(3,3)");
+//
+//  nodeEnter.append("rect")
+//    .attr("rx", 5).attr("ry", 5)
+//    .style("stroke-width","0")
+//    .attr("width", nodeWidth).attr("height", nodeHeight)
+//    .on("click", function (d) { click(d) })
+//    .on("touchend", function (d) { click(d) });
+//  nodeEnter.append("title")
+//    .text(function (d) { return d.label; });
+//
+//  node.style("fill", function (d) { return d.colour; });
+//
+//  d3cola.on("tick", function () {
+//    link.attr("transform", function (d) {
+//      var dx = d.source.x - d.target.x, dy = d.source.y - d.target.y;
+//      var r = 180 * Math.atan2(dy, dx) / Math.PI;
+//      return "translate(" + d.target.x + "," + d.target.y + ") rotate(" + r + ") ";
+//    }).attr("width", function (d) {
+//      var dx = d.source.x - d.target.x, dy = d.source.y - d.target.y;
+//      return Math.sqrt(dx * dx + dy * dy);
+//    });
+//
+//    node.attr("transform", function (d) { return "translate(" + (d.x - nodeWidth/2) + "," + (d.y-nodeHeight/2) + ")"; });
+//  });
+//}
 //function graphBounds() {
 //  var x = Number.POSITIVE_INFINITY, X=Number.NEGATIVE_INFINITY, y=Number.POSITIVE_INFINITY, Y=Number.NEGATIVE_INFINITY;
 //  nodesLayer.selectAll(".node").each(function (v) {
