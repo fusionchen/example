@@ -533,7 +533,8 @@ var diameter = 800;
 var margin = {top: 20, right: 120, bottom: 20, left: 120},
   width = diameter,
   height = diameter;
-
+var totalNodes = 0;
+var maxLabelLength = 0;
 var i = 0,
   duration = 350,
   root,
@@ -584,14 +585,67 @@ var treeJSON = d3.json("data/data.json", function(error, treeData) {
   update(root);
   centerNode(root);
 
-  d3.select(self.frameElement).style("height", "800px");
+ //d3.select(self.frameElement).style("height", "800px");
+  function visit(parent, visitFn, childrenFn) {
+    if (!parent) return;
+    visitFn(parent);
+    var children = childrenFn(parent);
+    if (children) {
+      var count = children.length;
+      for (var i = 0; i < count; i++) {
+        visit(children[i], visitFn, childrenFn);
+      }
+    }
+  }
+
+  visit(treeData, function (d) {
+    totalNodes++;
+    maxLabelLength = Math.max(d.name.length, maxLabelLength);
+  }, function (d) {
+    return d.children && d.children.length > 0 ? d.children : null;
+  });
+
+  function pan(domNode, direction) {
+    var speed = panSpeed;
+    if (panTimer) {
+      clearTimeout(panTimer);
+      translateCoords = d3.transform(svgGroup.attr("transform"));
+      if (direction == 'left' || direction == 'right') {
+        translateX = direction == 'left' ? translateCoords.translate[0] + speed : translateCoords.translate[0] - speed;
+        translateY = translateCoords.translate[1];
+      } else if (direction == 'up' || direction == 'down') {
+        translateX = translateCoords.translate[0];
+        translateY = direction == 'up' ? translateCoords.translate[1] + speed : translateCoords.translate[1] - speed;
+      }
+      scaleX = translateCoords.scale[0];
+      scaleY = translateCoords.scale[1];
+      scale = zoomListener.scale();
+      svgGroup.transition().attr("transform", "translate(" + translateX + "," + translateY + ")scale(" + scale + ")");
+      d3.select(domNode).select('g.node').attr("transform", "translate(" + translateX + "," + translateY + ")");
+      zoomListener.scale(zoomListener.scale());
+      zoomListener.translate([translateX, translateY]);
+      panTimer = setTimeout(function () {
+        pan(domNode, speed, direction);
+      }, 50);
+    }
+  }
+
 
   function centerNode(source){
+    if(isNaN(source.y0)){
+         source.y0 =0;
+     }
+     if(isNaN(source.x0)){
+       source.x0 =0;
+     }
      var scale = zoomListener.scale(),
          x = -source.y0,
          y = -source.x0;
+         console.log('scale ',scale);
          x = x * scale + width / 2;
          y = y * scale + height / 2;
+         console.log('center node2' , x);
+         console.log('center node2' , y);
          d3.select('g').transition()
             .duration(duration)
             .attr("transform", "translate(" + x + "," + y + ")scale(" + scale + ")");
@@ -625,16 +679,28 @@ var treeJSON = d3.json("data/data.json", function(error, treeData) {
 
     nodeEnter.append("text")
       .attr("x", function(d) { return d.children || d._children ? 45 : 20; })
-      //.attr("dy", ".35em")
+      .attr("dy", ".35em")
       .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
       //.attr("transform", function(d) { return d.x < 180 ? "translate(0)" : "rotate(180)translate(-" + (d.name.length * 8.5)  + ")"; })
       .text(function(d) { return d.name; })
-      .style("fill-opacity", 1e-6);
+      .style("fill-opacity", 0);
 
     // Transition nodes to their new position.
     var nodeUpdate = node.transition()
       .duration(duration)
-      .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + d.y + ")"; })
+      .attr("transform", function(d) {
+        if(isNaN(d.x) || isNaN(d.y)) {
+          console.log(' transform x ',  d.x);
+          console.log(' transform y ',  d.y);
+
+          return "rotate(" + 0 + ")translate(" + d.y + ")";
+        }else{
+          console.log(' transform x2 ',  d.x);
+          console.log(' transform y2 ',  d.y);
+          return "rotate(" + (d.x - 90) + ")translate(" + d.y + ")";
+        }
+  });
+
 
     nodeUpdate.select("circle")
       .attr("r", 4.5)
@@ -661,10 +727,14 @@ var treeJSON = d3.json("data/data.json", function(error, treeData) {
       .data(links, function(d) { return d.target.id; });
 
     // Enter any new links at the parent's previous position.
-    link.enter().insert("path", "g")
+    link.enter().insert("svg:path", "g")
       .attr("class", "link")
       .attr("d", function(d) {
-        var o = {x: source.x0, y: source.y0};
+
+        var o = {
+          x: source.x,
+          y: source.y
+        };
         return diagonal({source: o, target: o});
       });
 
@@ -677,7 +747,7 @@ var treeJSON = d3.json("data/data.json", function(error, treeData) {
     link.exit().transition()
       .duration(duration)
       .attr("d", function(d) {
-        var o = {x: source.x, y: source.y};
+        var o = {x: source.x0, y: source.y0};
         return diagonal({source: o, target: o});
       })
       .remove();

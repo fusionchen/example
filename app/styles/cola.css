@@ -1,14 +1,14 @@
-.background {
-  stroke: gray;
-  stroke-width: 1px;
-  fill: white;
-}
-.node {
-  stroke: #fff;
-  stroke-width: 1.5px;
-}
+/*.background {*/
+  /*stroke: gray;*/
+  /*stroke-width: 1px;*/
+  /*fill: white;*/
+/*}*/
+/*.node {*/
+  /*stroke: #fff;*/
+  /*stroke-width: 1.5px;*/
+/*}*/
 
-.spike {
-  fill: url(#SpikeGradient);
-  stroke-width: 0;
-}
+/*.spike {*/
+  /*fill: url(#SpikeGradient);*/
+  /*stroke-width: 0;*/
+/*}*/
