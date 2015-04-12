@@ -1,4 +1,3 @@
-///<reference path="../extern/jquery.d.ts"/>
 var tmdb;
 (function (tmdb) {
   var NodeType = (function () {
@@ -129,14 +128,15 @@ var tmdb;
     };
     Graph.prototype.addEdge = function (u, v) {
       var edge = u.type.makeEdge(u.name(), v.name());
+      console.log('edge ', u.degrees);
       var ename = edge.toString();
+      console.log('ename', v.degree);
       if (!(ename in this.edges)) {
-        this.edges[ename] = edge;
-      }
+       this.edges[ename] = edge;
+     }
       ++u.degree, ++v.degree;
     };
     return Graph;
   })();
   tmdb.Graph = Graph;
 })(tmdb || (tmdb = {}));
-//# sourceMappingURL=tmdbgraph.js.map
